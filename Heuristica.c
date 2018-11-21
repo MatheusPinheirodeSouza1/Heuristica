@@ -69,55 +69,42 @@ for(j = 1; j <= n_onibus; j++){
 fscanf(fp1,"\n");
 
 /*Metodo guloso*/
-bool it = false;
-int menorcusto=100;
-int parada_atual=1;
-int cargatotal = capacidade[1];
+bool it;
+int menorcusto;
+int parada_atual;
+int cargatotal;
 int parada_anterior;
-int passou[n_paradas][n_paradas];//Indica as paradas que passou
-int aux_quantidade_parada[100];
-copy(begin(quantidade_parada), end(quantidade_parada), begin(aux_quantidade_parada));
-while(!it){
-	parada_anterior = parada_atual;
-	menorcusto = 100;
-	for(j = 1;j <= n_paradas;j++){
-		//Só pega o menor custo se a proxima aresta tiver aluno para pegar
-		if((custo_aresta[parada_atual][j] != 0) && (custo_aresta[parada_atual][j] < menorcusto) && (aux_quantidade_parada[j] > 0)){
-			menorcusto = custo_aresta[parada_atual][j];
-			parada_atual = j;
-			if((cargatotal - aux_quantidade_parada[parada_atual]) >= 0)
-				passou[parada_atual][j] = 1;
-		}
 
-	}
-	for(i = 1;i <= n_paradas;i++){
-		if((custo_aresta[i][parada_atual] != 0) && (custo_aresta[i][parada_atual]< menorcusto) && (aux_quantidade_parada[i] > 0)){
-			menorcusto = custo_aresta[i][parada_atual];
-			parada_atual = i;
-			if((cargatotal - aux_quantidade_parada[parada_atual]) >= 0)
-				passou[i][parada_atual] = 1;
+for(k = 1; k <= n_onibus;k++){
+	cargatotal = capacidade[k];
+	parada_atual=1;
+	it = false;
+	while(!it){
+		parada_anterior = parada_atual;
+		menorcusto = 100;
+		if(parada_atual <= n_paradas)
+			for(j = 1;j <= n_paradas;j++){
+				//Só pega o menor custo se a proxima aresta tiver aluno para pegar, e não utrapassar a carga maxima
+				if((custo_aresta[parada_anterior][j] != 0) && (custo_aresta[parada_anterior][j] < menorcusto) && (quantidade_parada[j] > 0) && ((cargatotal - quantidade_parada[j]) >= 0)){
+					menorcusto = custo_aresta[parada_anterior][j];
+					parada_atual = j;
+				}
+			}
+		if(menorcusto == 100){//Caso não consiga mais percorrer um caminho ele vai para as escolas
+			for(i = n_paradas+1;i <=n_paradas+n_paradas_escolas;i++){
+				printf("x%d_%d_%d = 1\n",parada_atual,i,k);
+				parada_atual = i;
+			}
+			it = true;
+		}else{//Adiciona a parada que passou e exclui o numero de alunos daquela parada
+			cargatotal = cargatotal - quantidade_parada[parada_atual];
+			quantidade_parada[parada_atual] = 0 ;
+			printf("x%d_%d_%d = 1\n",parada_anterior,parada_atual,k);
 		}
-	}
-	if((cargatotal - aux_quantidade_parada[parada_atual]) >= 0){
-		cargatotal = cargatotal - aux_quantidade_parada[parada_atual];
-		aux_quantidade_parada[parada_atual] = 0 ;
-	}
-	else{
-		aux_quantidade_parada[parada_atual] = 0 ;
-		parada_atual = parada_anterior;
-	}
-	if(menorcusto == 100){
-		passou[parada_atual+1][parada_atual] = 1;
-		it = true;
 	}
 }
 
-for(i=1;i <n_paradas;i++){
-	for(j=1; j <n_paradas ;j++){
-		if(passou[i][parada_atual] == 1)
-			printf("x%d_%d = 1\n",i,j);
-	}
-}
+
 return 0;
 }
 
